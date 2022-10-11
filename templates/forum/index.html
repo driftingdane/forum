@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %} | {% endblock title %}
+
+{% block head %}
+    <meta name="description" content="">
+    <meta property="og:title" content="">
+    <meta property="og:site_name" content="{{ request.get_host }}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:image" content="{% static 'img/logo.png' %}" type="image/png">
+    <meta property="og:description" content="">
+
+    <style>
+
+        .fancy-border {
+            text-align: center;
+            border-top: 5px solid;
+            border-image: linear-gradient(to right, #feb272 25%, #ffff80 25%, #c5b3e6 50%, #badbcc 50%) 5 !important;;
+        }
+
+        .fancy-border-list {
+            padding-bottom: 0.5em;
+            border-bottom: 1px solid;
+            border-image: linear-gradient(to right, #feb272 25%, #ffff80 25%, #c5b3e6 50%, #badbcc 50%) 5 !important;
+        }
+    </style>
+
+{% endblock head %}
+
+{% block content %}
+
+    <!-- <section> begin -->
+    <section>
+        <div class="container">
+            <div class="row">
+                <h2 class="text-center fs-5 font-semibold position-relative">Latest Discussions</h2>
+                <div class="col-sm-3">
+                    <p class="text-center fw-bold">Active Forums</p>
+                  <ul class="list-group pb-5 pt-2">
+                        {% for forum in all_forums %}
+                        <li id="active_{{ forum.pk }}" data-id="{{ forum.pk }}" class="list-group-item fancy-border-list fs-6 fw-bold">{{ forum.topic }}
+                        <a href="{{ forum.get_absolute_url }}" class="btn btn-link text-dark text-start">Create discussion</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="col-sm-8 mx-auto mb-5 mt-4 position-relative py-4">
+                    <ul class="list-group list-group-numbered list-group-flush text-wrap text-break">
+                            {% for w in posts %}
+                                <a class="btn-link text-decoration-none" href="{{ w.get_absolute_url }}">
+                                <li class="list-group-item d-flex justify-content-between align-items-start mb-4 fancy-border">
+                                 <div class="ms-2 text-start">
+                                     <h3 class="fs-6">{{ w.forum.topic|capfirst }}</h3>
+                                    <p class="fs-4">{{ w.title|capfirst }}</p>
+                                    {{ w.discuss|striptags|truncatechars_html:50|safe }}
+                                </div>
+                                     <span title="Replies made" data-bs-toggle="tooltip" class="position-absolute top-0 start-100 translate-middle bg-warning rounded px-2">{{ w.replies.count }}</span>
+                                </li>
+                                </a>
+                            {% endfor %}
+                         </ul>
+
+                    {% if request.user.is_authenticated is False %}
+
+                            {% include "inc/_user_status.html" %}
+
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- <section> -->
+{% endblock content %}
+<!-- Custom scripts for other templates -->
+{% block js %}
+
+
+{% endblock js %}

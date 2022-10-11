@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %} | {% endblock title %}
+
+{% block head %}
+    <meta name="description" content="">
+    <meta property="og:title" content="">
+    <meta property="og:site_name" content="{{ request.get_host }}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:image" content="{% static 'img/logo.png' %}" type="image/png">
+    <meta property="og:description" content="">
+
+    <style>
+
+        {#  Hide messages default #}
+        #successMsg, #errorMsg, #invalid-msg, #invalid-title, .successMsg, .errorMsg {
+            display: none;
+        }
+
+    </style>
+
+    {% block css %}
+        <link href="{% static 'css/forum.css' %}" rel="stylesheet" type="text/css">
+    {% endblock css %}
+
+{% endblock head %}
+
+{% block content %}
+
+    <!-- <section> begin -->
+    <section id="body_refresh">
+        <div class="container">
+            <div class="row">
+                <h2 class="text-center fs-5 font-semibold position-relative">Active discussions:</h2>
+                <h3 class="fs-6 text-center">{{ cat_slug|title }}</h3>
+                <div class="col-sm-3">
+                    <p class="text-center fw-bold">Other Forums</p>
+                    <ul class="list-group pb-5 pt-2">
+                        {% for forum in all_forums %}
+                            <a href="{{ forum.get_absolute_url }}" class="btn-link text-decoration-none">
+                                <li id="active_{{ forum.pk }}" data-id="{{ forum.pk }}"
+                                    class="list-group-item fancy-border-list">{{ forum.topic }}
+                                </li>
+                            </a>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="col-sm-8 mx-auto py-4 mt-3 offset-1">
+                    {% for cat in list_forum_post %}
+                        <ul class="list-group pb-5 pt-2 text-wrap text-break">
+                            {% if cat.forums.all %}
+                                {% for f in cat.forums.all %}
+                                    {% if f.forum and f.parent is None %}
+                                        <a href="{{ f.get_absolute_url }}" class="btn-link text-decoration-none">
+                                            <li class="list-group-item d-flex justify-content-between align-items-start mb-4 fancy-border-list">
+
+                                                <div class="ms-2 text-start">
+                                                    <p class="fs-4">{{ f.title|capfirst }}</p>
+                                                    {{ f.discuss|striptags|truncatechars_html:50|safe }}
+                                                </div>
+                                                <span title="Replies made" data-bs-toggle="tooltip"
+                                                      class="position-absolute top-0 start-100 translate-middle bg-warning rounded px-2">{{ f.replies.count }}</span>
+                                            </li>
+                                        </a>
+                                    {% else %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <div class="alert alert-info" role="alert">
+                                    <strong>No Topic yet! Be the first to create one?</strong>
+                                </div>
+                            {% endif %}
+                        </ul>
+                        <div id="forum" data-id="{{ cat.pk }}"></div>
+                    {% endfor %}
+                    {% if request.user.is_authenticated %}
+                        <div class="d-grid gap-2 mx-auto col-12 py-5">
+                            <p class="text-center fs-5 font-semibold">Create Discussion</p>
+                            <form novalidate id="createForm" action="{% url 'forum:create_disc' %}" method="POST">
+                                {% csrf_token %}
+                                <div class="form-outline w-100 position-relative">
+                                    <div id="successMsg" class="alert alert-success" role="alert">
+                                        Submitted!
+                                    </div>
+
+                                    <label class="form-label fw-bold text-black-50" for="title">Title</label>
+                                    <div id="invalid-title" class="alert alert-warning" role="alert">
+                                        Do not piss off Mr Hedelund! Put a title
+                                    </div>
+                                    <div class="mb-3">
+                                        <input name="title" type="text" class="form-control" id="title" value=""
+                                               required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold text-black-50" for="create">Write something
+                                            godless!</label>
+                                        <div id="invalid-msg" class="alert alert-warning" role="alert">
+                                            Do not piss off Mr Hedelund! Write something
+                                        </div>
+                                        <textarea name="create" class="form-control" rows="4" id="create"
+                                                  placeholder="Write something gooood... or Mr Hedelund will kick your ass!"
+                                                  required>
+                                    </textarea>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2 col-6 mx-auto py-3">
+                                    <button class="btn btn-outline-primary" type="submit">Create</button>
+                                </div>
+
+                            </form>
+                        </div>
+
+
+                    {% else %}
+
+                        {% include "inc/_user_status.html" %}
+
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- <section> -->
+{% endblock content %}
+<!-- Custom scripts for other templates -->
+{% block js %}
+
+    <script src="{% static 'js/tinymce/tinymce.min.js' %}"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            let active_forum = $("#forum").attr('data-id');
+            $("#active_" + active_forum).addClass("active_forum fw-bold")
+
+
+            tinymce.init({
+                selector: '#create',
+                plugins: 'fullscreen',
+                toolbar: [
+                    'fullscreen | undo redo | styles | bold italic | alignleft aligncenter alignright'
+                ],
+                height: '280',
+                toolbar_location: 'top',
+                toolbar_mode: 'wrap',
+                menubar: false,
+                browser_spellcheck: true,
+                contextmenu: false,
+                newline_behavior: 'linebreak',
+                InsertLineBreak: true,
+            });
+
+            $('#createForm').submit(function (e) {
+                let rp = $('#create').val();
+                let tp = $('#title').val();
+                let ForumId = $('#forum').data('id');
+                let tp_ = $("#invalid-title");
+                let rp_ = $("#invalid-msg");
+
+                $(rp).serialize();
+                $(tp).serialize();
+
+                if (tp === '') {
+                    tp_.show("#invalid-title");
+                    return false
+                }
+
+                if (rp === '') {
+                    rp_.show("#invalid-msg");
+                    return false
+                }
+
+                e.preventDefault()
+                e.stopPropagation()
+
+
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "forum:create_disc" %}',
+                    data: {
+                        rp: rp,
+                        tp: tp,
+                        ForumId: ForumId,
+                        csrfmiddlewaretoken: '{{csrf_token}}',
+                        action: 'POST',
+                        dataType: 'json',
+                    },
+                    success: function (json) {
+                        console.log(json)
+                        $('#successMsg').show().delay(5000).fadeOut();
+
+                    },
+                    complete:
+                        function (json) {
+                            console.log(json)
+                            setTimeout(function () {
+                                $("#body_refresh").load("#body_refresh")
+                            }, 1000);
+                        },
+
+                    error: function (xhr, json, thrownError) {
+                        console.log(json);
+                        if (xhr.status === 404 || xhr.status === 500) {
+                            $('#errorMsg').show().delay(5000).fadeOut();
+                        }
+                    },
+
+                });
+
+            });
+
+        }); /// Document ready
+
+    </script>
+
+{% endblock js %}

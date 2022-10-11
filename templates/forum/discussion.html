@@ -1,0 +1,570 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %} | Forum | {{ disc.title }} | {% endblock title %}
+{% block head %}
+    <meta name="description" content="Forum">
+    <meta property="og:title" content="{{ site.domain }} | Forum | {{ disc.title }} ">
+    <meta property="og:image" content="{% static 'img/logo.png' %}" type="image/png">
+    <meta property="og:site_name" content="{{ request.get_host }}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:description" content="{{ site.domain }} | Forum | {{ disc.title }}">
+
+    <style>
+        {#  Hide messages default      #}
+        #successMsg, #errorMsg, #invalid-msg, .successMsg, .errorMsg {
+            display: none;
+        }
+    </style>
+
+
+    {% block css %}
+        <link href="{% static 'css/forum.css' %}" rel="stylesheet" type="text/css">
+
+    {% endblock css %}
+
+
+{% endblock head %}
+{% block content %}
+    <!-- <section> begin ============================-->
+    <section id="body_refresh">
+        <div class="container">
+            <div class="row">
+                <h2 class="text-center fs-5 font-semibold position-relative">Forum:</h2>
+                <h3 class="fs-6 text-center">{{ disc.forum.topic }}</h3>
+                    <div class="col-sm-3">
+                        <p class="text-center fw-bold">Active Forums</p>
+                        <ul class="list-group pb-5 pt-2">
+                            {% for forum in all_forums %}
+                                <a href="{{ forum.get_absolute_url }}" class="btn-link text-decoration-none text-wrap"
+                                   title="See all discussions in {{ forum.topic }}" data-bs-toogle="tooltip">
+                                    <li class="list-group-item fancy-border-list text-break" id="active_{{ forum.pk }}"
+                                        data-id="{{ forum.pk }}"
+                                        class="list-group-item">{{ forum.topic|capfirst }}
+                                    </li>
+                                </a>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="col-sm-8 mx-auto py-4 mt-3 offset-1">
+                        <article class="list-group list-group-flush">
+                            <h3 class="fs-4 mt-4">{{ disc.title }}</h3>
+                            <div id="refresh_post" class="list-group-item article mt-3 fancy-border-list">
+                                <div id="clapCounts_{{ disc.id }}"
+                                     class="position-absolute top-0 start-100 translate-middle-x">
+                                    <button title="Give Claps for this" data-bs-toggle="tooltip" id="{{ disc.id }}"
+                                            data-id="{{ disc.claps }}" class="btn claps giveClaps">
+                                             <span class="fa-flip-horizontal">
+                                                <small class="fw-lessbold">{{ disc.claps }}</small>
+                                                <i class="fa-solid fa-hands clap-color fa-rotate-by"
+                                                   style="--fa-rotate-angle: 45deg;"></i>
+                                             </span>
+                                    </button>
+                                </div>
+                                <i class="fa-regular fa-user fa-2x fa-fw first"></i>
+                                <small class="fw-normal text-muted text-wrap "><strong>{{ disc.author|capfirst }}</strong>
+                                    on <span class="text-muted">{{ disc.publish|date:"D, d M, Y" }}</span>
+                                </small>
+                                <div class="py-4 lead">{{ disc.discuss|safe }}</div>
+                            </div>
+
+                            {% for reply in child %}
+                                <div id="remove_{{ reply.pk }}"
+                                     class="list-group-item position-relative replies indent_replies py-4 align-middle fancy-border-list">
+                                  {% if request.user.is_authenticated %}
+                                    <div id="clapCounts_{{ reply.id }}"
+                                         class="position-absolute top-0 start-100 translate-middle-x">
+                                        <button title="Give Claps for this" data-bs-toggle="tooltip" id="{{ reply.id }}"
+                                                data-id="{{ reply.claps }}" class="btn claps giveClaps">
+                                             <span class="fa-flip-horizontal">
+                                                <small class="fw-lessbold">{{ reply.claps }}</small>
+                                                <i class="fa-solid fa-hands clap-color fa-rotate-by"
+                                                   style="--fa-rotate-angle: 45deg;"></i>
+                                             </span>
+                                        </button>
+                                    </div>
+                                    <div id="delMsg_{{ reply.pk }}" class="alert alert-success" style="display: none;">Reply deleted!</div>
+
+                                  {% endif %}
+
+                                    <i class="fa-regular fa-user second fa-fw"></i>
+                                    <small class="fw-normal text-muted text-wrap"><strong>{{ reply.author|capfirst }}</strong>
+                                        on <span class="text-muted">{{ reply.publish|date:"D, d M, Y" }}</span>
+                                    </small>
+                                    <div id="reply_edit_{{ reply.pk }}" data-parent="{{ reply.discuss|safe }}"
+                                         class="col-12 py-4">
+                                        {{ reply.discuss|safe }}
+                                    </div>
+
+
+                                    {% if request.user.id == reply.author.id %}
+                                        <button title="Delete" data-bs-toggle="tooltip" id="btnDel_{{ reply.id }}"
+                                                class="btn btn-sm btn-outline-danger small float-end mx-1 del_id"
+                                                data-id="{{ reply.id }}"><i class="fa-regular fa-trash-can"></i>
+                                        </button>
+                                        <button title="Edit" data-bs-toggle="tooltip" id="btnEdit_{{ reply.id }}"
+                                                class="btn btn-sm btn-outline-primary reply_id small float-end mx-1"
+                                                data-id="{{ reply.id }}" data-parent="{{ reply.discuss|safe }}">
+                                            <i class="fa-regular fa-pen-to-square"></i>
+                                        </button>
+                                    {% elif request.user.is_authenticated %}
+                                        <button title="Reply to {{ reply.author|capfirst }}" data-bs-toggle="tooltip"
+                                                id="btnReply_{{ reply.id }}"
+                                                class="btn btn-sm btn-outline-primary reply_id small float-end mx-1"
+                                                data-id="{{ reply.id }}"><i class="fa-solid fa-pencil"></i></button>
+                                    {% endif %}
+
+                                    <button title="Cancel" data-bs-toggle="tooltip" id="btnCancel_{{ reply.id }}"
+                                            class="btn btn-sm btn-outline-danger small float-end"
+                                            data-id="{{ reply.id }}" style="display: none;"><i
+                                            class="fa-solid fa-x"></i>
+                                    </button>
+
+                                </div>
+
+                                {% for rep in reply.replies.all %}
+                                        {% if rep.status == "published" %}
+                                            <div id="remove_{{ rep.pk }}"
+                                             class="list-group-item position-relative replies_reply replies py-4 mb-5 fancy-border-list">
+                                          {% if request.user.is_authenticated %}
+                                            <div id="clapCounts_{{ rep.id }}"
+                                                 class="position-absolute top-0 start-100 translate-middle-x">
+                                                <button title="Give Claps for this" data-bs-toggle="tooltip"
+                                                        id="{{ rep.id }}" data-id="{{ rep.claps }}"
+                                                        class="btn claps shadow-none claps giveClaps">
+                                             <span class="fa-flip-horizontal">
+                                                <small class="fw-lessbold">{{ rep.claps }}</small>
+                                                <i class="fa-solid fa-hands clap-color repcolor fa-rotate-by"
+                                                   style="--fa-rotate-angle: 45deg;"></i>
+                                             </span>
+                                                </button>
+                                            </div>
+                                            <div id="delMsg_{{ rep.pk }}" class="alert alert-success" style="display: none;">Reply deleted!</div>
+                                        {% endif %}
+
+                                            <i class="fa-regular fa-user fa-fw third"></i>
+                                            <small class="fw-normal text-muted text-wrap"><strong>{{ rep.author|capfirst }}</strong>
+                                                <span class="text-muted">replied on<mark> {{ reply.discuss|striptags|truncatechars_html:15|safe }}</mark></span>
+                                            </small>
+                                            <div id="reply_edit_{{ rep.pk }}" data-parent="{{ rep.discuss|safe }}"
+                                                 class="col-12 py-4">
+                                                {{ rep.discuss|safe }}
+                                            </div>
+
+                                            {% if request.user.id == rep.author.id %}
+                                                <button title="Delete" data-bs-toggle="tooltip" id="btnDel_{{ rep.id }}"
+                                                        class="btn btn-sm btn-outline-danger small float-end mx-1 del_id"
+                                                        data-id="{{ rep.id }}"><i class="fa-regular fa-trash-can"></i>
+                                                </button>
+                                                <button title="Edit" data-bs-toggle="tooltip" id="btnEdit_{{ rep.id }}"
+                                                        class="btn btn-sm btn-outline-primary reply_id small float-end mx-1"
+                                                        data-id="{{ rep.id }}" data-parent="{{ rep.discuss|safe }}">
+                                                    <i class="fa-regular fa-pen-to-square"></i>
+                                                </button>
+                                                <button title="Cancel" data-bs-toggle="tooltip"
+                                                        id="btnCancel_{{ rep.id }}"
+                                                        class="btn btn-sm btn-outline-danger small float-end mx-1"
+                                                        data-id="{{ rep.id }}" style="display: none;"><i
+                                                        class="fa-solid fa-x"></i>
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endfor %}
+
+                            <div id="forum" data-id="{{ disc.forum.pk }}"></div>
+
+                        </article>
+
+                        <div id="errorMsg" class="alert alert-danger" role="alert">
+                            Error! Something went wrong.
+                        </div>
+
+                    {% if request.user.is_authenticated %}
+                        <div class="d-grid gap-2 mx-auto col-12 py-5">
+                            <form novalidate id="myForm" action="{% url 'forum:post_reply' %}" method="POST">
+                                {% csrf_token %}
+                                <input type="hidden" id="rpId" value="{{ disc }}">
+                                <input type="hidden" id="ForumId" value="{{ disc.forum.pk }}">
+
+                                <div class="form-outline w-100 position-relative">
+
+                                    <div id="invalid-msg" class="alert alert-warning" role="alert">
+                                        Do not piss off Mr Hedelund! Write something
+                                    </div>
+                                    <div id="successMsg" class="alert alert-success" role="alert">
+                                        Submitted!
+                                    </div>
+
+                                    {% if request.user.is_authenticated and request.user.id == disc.author.id %}
+                                        <label class="form-label fw-bold text-black-50" for="reply">Edit topic</label>
+                                        <p class="small">
+                                            <mark>Logged in as the Author</mark>
+                                        </p>
+                                    {% else %}
+                                        <label class="form-label fw-bold text-black-50" for="reply">Reply to
+                                            topic</label>
+                                    {% endif %}
+                                    <textarea name="reply" class="form-control" rows="4" id="reply"
+                                              placeholder="Write something gooood... or Mr Hedelund will kick your ass!"
+                                              required>
+                                    {% if request.user.is_authenticated and request.user.id == disc.author.id %}
+                                        {{ disc.discuss|safe }}
+                                    {% endif %}
+                                    </textarea>
+                                </div>
+
+                                <div class="d-grid gap-2 col-6 mx-auto py-3">
+                                    <button class="btn btn-outline-primary" type="submit">Write</button>
+                                </div>
+
+                            </form>
+                        </div>
+
+                    {% else %}
+
+                        {% include "inc/_user_status.html" %}
+
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- <section> close ============================-->
+
+{% endblock content %}
+<!-- Custom scripts for other templates -->
+{% block js %}
+
+    <script src="{% static 'js/tinymce/tinymce.min.js' %} "></script>
+
+    <script>
+
+        $(document).ready(function () {
+
+            let tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            let tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            })
+
+            $('[data-bs-toggle="tooltip"]').tooltip({
+                trigger: 'hover'
+            })
+
+
+            //////////////////////////////////////////////////////////////////////
+
+            // REPLY ON TOPIC
+
+            //////////////////////////////////////////////////////////////////////
+
+            let active_forum = $("#forum").attr('data-id');
+            $("#active_" + active_forum).addClass("active_forum fw-bold")
+
+            tinymce.init({
+                selector: '#reply',
+                plugins: 'fullscreen',
+                toolbar: [
+                    'fullscreen | undo redo | styles | bold italic | alignleft aligncenter alignright'
+                ],
+                height: '280',
+                toolbar_location: 'top',
+                toolbar_mode: 'wrap',
+                menubar: false,
+                browser_spellcheck: true,
+                contextmenu: false,
+                newline_behavior: 'linebreak',
+                InsertLineBreak: true,
+            });
+
+            $('#myForm').submit(function (e) {
+                let id = $('#rpId').val();
+                let rp = $('#reply').val();
+                let ForumId = $('#ForumId').val();
+                let rp_ = $("#invalid-msg");
+
+                $(rp).serialize();
+                if (rp === '') {
+                    rp_.show("#invalid-msg");
+                    return false
+                }
+                e.preventDefault()
+                e.stopPropagation()
+
+
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "forum:post_reply" %}',
+                    data: {
+                        id: id,
+                        rp: rp,
+                        ForumId: ForumId,
+                        csrfmiddlewaretoken: '{{csrf_token}}',
+                        action: 'POST',
+                        dataType: 'json',
+                    },
+                    success: function (json) {
+                        console.log(json)
+                        $('#successMsg').show().delay(5000).fadeOut();
+
+                    },
+                    complete:
+                        function (json) {
+                            console.log(json)
+                            setTimeout(function () {
+                                $("#body_refresh").load("#body_refresh")
+                            }, 1000);
+                        },
+
+                    error: function (xhr, json, thrownError) {
+                        console.log(json);
+                        if (xhr.status === 404 || xhr.status === 500) {
+                            $('#errorMsg').show().delay(5000).fadeOut();
+                        }
+                    },
+
+                });
+
+            });
+
+            //////////////////////////////////////////////////////////////////////
+
+            // REPLY ON REPLY
+
+            //////////////////////////////////////////////////////////////////////
+
+            $(".reply_id").one("click", function () {
+
+
+                let reply_id = $(this).data('id');
+                let edit_reply = $(this).data('parent');
+                let forum = $("#forum").attr('data-id');
+                let edit_reply_ = $(".errorMsg");
+
+                $(edit_reply).serialize();
+                if (edit_reply === '') {
+                    edit_reply_.show(".errorMsg");
+                    return false
+                }
+
+                let btn_text = "Update"
+                if (typeof edit_reply === "undefined") {
+                    edit_reply = ""
+                    btn_text = "Reply"
+                }
+
+                /// Inject the form dynamically on click reply
+                let insertForm = $('<form id="ReplyForm_' + reply_id + '" data-id="' + reply_id + '" action="{% url 'forum:reply_reply' %}" method="POST" novalidate>\n' +
+                    '{% csrf_token %}' +
+                    '<div class="form-outline w-100 mt-3">\n' +
+                    '<label class="form-label" for="reply">Reply</label>\n' +
+                    '<div class="alert alert-success successMsg">Submitted!</div>\n' +
+                    '<div class="alert alert-warning errorMsg">Do not piss off Mr Hedelund! Write something!</div>\n' +
+                    '<textarea id="reply_reply_' + reply_id + '" class="form-control reply_reply" rows="4"\n' +
+                    'placeholder="Write something gooood! Or Mr. Hedelund will kick your Ass.">' + edit_reply + '</textarea>\n' +
+                    '</div>\n' +
+                    '<div class="float-start mt-2 pt-1">\n' +
+                    '<button class="btn btn-outline-primary btn-sm" type="submit">' + btn_text + '</button>\n' +
+                    '</div>\n' +
+                    '</form>');
+
+
+                /// Manipulate reply/edit/cancel buttons
+
+                if ($(this).parent(".replies").append(insertForm)) {
+                    $('#btnReply_' + reply_id).hide();
+                    $('#btnCancel_' + reply_id).show();
+                    $('#btnEdit_' + reply_id).hide();
+                    $('#btnDel_' + reply_id).hide();
+
+                }
+
+                $("#btnCancel_" + reply_id).click(function () {
+                    $(insertForm).hide();
+                    $('#btnReply_' + reply_id).show();
+                    $('#btnCancel_' + reply_id).hide();
+                    $('#btnEdit_' + reply_id).show();
+                    $('#btnDel_' + reply_id).show();
+
+                });
+
+                $("#btnEdit_" + reply_id).click(function () {
+                    $(insertForm).show();
+                    $('#btnCancel_' + reply_id).show();
+                    $('#btnEdit_' + reply_id).hide();
+
+                });
+
+                $("#btnReply_" + reply_id).click(function () {
+                    $(insertForm).show();
+                    $('#btnCancel_' + reply_id).show();
+                    $('#btnReply_' + reply_id).hide();
+                });
+
+                // Intialize editor after dynamic textarea and before ajax request
+                tinymce.init({
+                    selector: '#reply_reply_' + reply_id,
+                    plugins: 'fullscreen',
+                    toolbar: [
+                        'fullscreen | undo redo | styles | bold italic | alignleft aligncenter alignright'
+                    ],
+                    height: '280',
+                    toolbar_location: 'top',
+                    toolbar_mode: 'wrap',
+                    menubar: false,
+                    browser_spellcheck: true,
+                    contextmenu: false,
+                    newline_behavior: 'linebreak',
+                    InsertLineBreak: true,
+                });
+
+                $("#ReplyForm_" + reply_id).submit(function (e) {
+                    let reply = $('#reply_reply_' + reply_id).val();
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '{% url "forum:reply_reply" %}',
+                        data: {
+                            reply_id: reply_id,
+                            reply: reply,
+                            forum: forum,
+                            csrfmiddlewaretoken: '{{csrf_token}}',
+                            action: 'POST',
+                            dataType: 'json',
+                        },
+                        success: function (json) {
+                            console.log(json)
+                            $('.successMsg').show().delay(5000).fadeOut();
+                        },
+                        complete:
+                            function (json) {
+                                console.log(json)
+                                setTimeout(function () {
+                                    $("#body_refresh").load("#body_refresh")
+                                }, 1000);
+                            },
+                        error: function (xhr, json, thrownError) {
+                            console.log(json);
+                            $('.errorMsg').show().delay(5000).fadeOut();
+                            if (xhr.status === 404 || xhr.status === 500) {
+                                $('#errorMsg').show().delay(5000).fadeOut();
+                            }
+
+                        },
+
+                    }); //  Ajax
+
+                }); /// Form submit
+
+
+                //////////// MAIN CLICK EVENT //////////////////////////
+
+            }); /// click function
+
+
+            $(document).on('click', ".del_id", function (e) {
+
+                let del_rep = $(this).data('id');
+
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+
+                let result = confirm('Do you want to delete this?');
+                if (!result) {
+                    return false;
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "forum:owner_post_delete" %}',
+                    data: {
+                        reply_id: del_rep,
+                        csrfmiddlewaretoken: '{{csrf_token}}',
+                        action: 'POST',
+                        dataType: 'json',
+                    },
+                    success: function (json) {
+                        console.log(json)
+                        $("#delMsg_" + del_rep).show().delay(5000).fadeOut();
+                    },
+                    complete:
+                        function (json) {
+                            console.log(json)
+                            setTimeout(function () {
+                                $("#remove_" + del_rep).remove()
+                            }, 1000);
+                            $("#body_refresh").load("#body_refresh")
+
+                        },
+                    error: function (xhr, json, thrownError) {
+                        console.log(json);
+                        if (xhr.status === 404 || xhr.status === 500) {
+                            $('#errorMsg').show().delay(5000).fadeOut();
+                        }
+
+                    },
+
+                }); //  Ajax
+
+            }); /// Form submit
+
+
+            /////////////////// CLAPS ///////////////////////////////
+
+
+            $(document).on('click', ".claps", function (e) {
+
+                let clap_rep = $(this).data('id');
+                let clap_id = $(this).attr('id');
+
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+
+                $.ajax({
+                    type: 'POST',
+                    url: '{% url "forum:add_claps" %}',
+                    data: {
+                        clap_id: clap_id,
+                        clap_rep: clap_rep,
+                        csrfmiddlewaretoken: '{{csrf_token}}',
+                        action: 'POST',
+                        dataType: 'json',
+                    },
+                    success: function (json) {
+                        console.log(json)
+                        $("#clapCounts_" + clap_id).tooltip('hide')
+                    },
+                    complete:
+                        function (json) {
+                            console.log(json)
+                            setTimeout(function () {
+                                $("#body_refresh").load("#body_refresh")
+                            }, 1000);
+                        },
+                    error: function (xhr, json, thrownError) {
+                        console.log(json);
+                        if (xhr.status === 404 || xhr.status === 500) {
+                            $('#errorMsg').show().delay(5000).fadeOut();
+                        }
+
+                    },
+
+                }); //  Ajax
+
+            }); /// Form submit
+
+        }); /// Document ready
+
+    </script>
+
+
+{% endblock js %}
+
+

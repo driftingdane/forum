@@ -1,0 +1,108 @@
+.fancy-border {
+    text-align: center;
+    border-top: 5px solid;
+    border-image: linear-gradient(to right, #feb272 25%, #ffff80 25%, #c5b3e6 50%, #badbcc 50%) 5 !important;;
+}
+
+.fancy-border-list {
+    padding-bottom: 0.5em;
+    border-bottom: 1px solid;
+    border-image: linear-gradient(to right, #feb272 25%, #ffff80 25%, #c5b3e6 50%, #badbcc 50%) 5 !important;
+}
+
+.indent_replies:not(:first-child) {
+    margin-left: 1em;
+}
+
+.replies_reply {
+    margin-left: 2em;
+}
+
+.active_forum {
+    border-width: 0.2em !important;
+}
+
+.first {
+    color: rgba(49, 166, 186, 0.93);
+    font-size: 1.3em;
+    vertical-align: baseline;
+ }
+
+.second {
+    color: rgba(119, 51, 164, 0.67);
+    font-size: 1em;
+    vertical-align: baseline;
+ }
+
+.third {
+    color: rgba(153, 50, 157, 0.67);
+    font-size: 0.9em;
+    vertical-align: baseline;
+ }
+
+.clap-color {
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    font-size: 1.2em;
+    text-align: center;
+    border-radius: 25px;
+    background: #bc02d3;
+    box-shadow: 0 0 0 4px rgb(188 2 211 / 35%);
+}
+
+.clap-color.repcolor {
+    background: rgba(253, 135, 1, 0.86);
+    box-shadow: 0 0 0 4px rgb(253 171 86 / 35%);
+    opacity: 0.7;
+}
+
+.fw-lessbold {
+    font-weight: 400;
+}
+
+
+.giveClaps:after {
+  content: "";
+  background: #90EE90;
+  display: block;
+  position: absolute;
+  padding-top: 50%;
+  padding-left: 100%;
+  margin-left: -20px!important;
+  margin-top: -120%;
+  opacity: 0;
+  transition: all 0.8s
+}
+
+.giveClaps:active:after {
+  padding: 0;
+  margin: 0;
+  opacity: 1;
+  transition: 0s
+}
+
+.giveClaps:focus {
+   outline: none !important;
+   box-shadow: none;
+}
+/*.tooltip-inner {*/
+/*    background: #8766ff;*/
+/*}*/
+
+/*.tooltip.bs-tooltip-top .tooltip-arrow {*/
+/*    border-top-color: #8766ff !important;*/
+/*}*/
+
+/*.tooltip.bs-tooltip-left .tooltip-arrow {*/
+/*    border-left-color: #8766ff !important;*/
+/*}*/
+
+/*.tooltip.bs-tooltip-right .tooltip-arrow {*/
+/*    border-right-color: #8766ff !important;*/
+/*}*/
+
+/*.tooltip.bs-tooltip-bottom .tooltip-arrow {*/
+/*    border-bottom-color: #8766ff !important;*/
+/*}*/

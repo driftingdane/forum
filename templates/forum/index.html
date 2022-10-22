@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %} | {% endblock title %}
+{% block title %} Forum | Latest Discussions {% endblock title %}
 
 {% block head %}
-    <meta name="description" content="">
-    <meta property="og:title" content="">
+    <meta name="description" content="List of active forums and latest discussions">
+    <meta property="og:title" content="Latest Discussions">
     <meta property="og:site_name" content="{{ request.get_host }}">
     <meta property="og:url" content="{{ request.build_absolute_uri }}">
     <meta property="og:image" content="{% static 'img/logo.png' %}" type="image/png">
@@ -33,12 +33,12 @@
     <section>
         <div class="container">
             <div class="row">
-                <h2 class="text-center fs-5 font-semibold position-relative">Latest Discussions</h2>
-                <div class="col-sm-3">
+                <h1 class="text-center fs-5 font-semibold position-relative">Latest Discussions</h1>
+                <div class="col-sm-3 mt-1">
                     <p class="text-center fw-bold">Active Forums</p>
                   <ul class="list-group pb-5 pt-2">
                         {% for forum in all_forums %}
-                        <li id="active_{{ forum.pk }}" data-id="{{ forum.pk }}" class="list-group-item fancy-border-list fs-6 fw-bold">{{ forum.topic }}
+                        <li id="active_{{ forum.pk }}" data-id="{{ forum.pk }}" class="list-group-item fancy-border-list font-semibold">{{ forum.topic }}
                         <a href="{{ forum.get_absolute_url }}" class="btn btn-link text-dark text-start">Create discussion</a>
                         </li>
                         {% endfor %}
@@ -47,10 +47,10 @@
                 <div class="col-sm-8 mx-auto mb-5 mt-4 position-relative py-4">
                     <ul class="list-group list-group-numbered list-group-flush text-wrap text-break">
                             {% for w in posts %}
-                                <a class="btn-link text-decoration-none" href="{{ w.get_absolute_url }}">
+                                <a class="btn-link text-decoration-none text-dark" href="{{ w.get_absolute_url }}">
                                 <li class="list-group-item d-flex justify-content-between align-items-start mb-4 fancy-border">
                                  <div class="ms-2 text-start">
-                                     <h3 class="fs-6">{{ w.forum.topic|capfirst }}</h3>
+                                     <h2 class="fs-6">{{ w.forum.topic|capfirst }}</h2>
                                     <p class="fs-4">{{ w.title|capfirst }}</p>
                                     {{ w.discuss|striptags|truncatechars_html:50|safe }}
                                 </div>

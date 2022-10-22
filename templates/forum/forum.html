@@ -1,18 +1,16 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %} | {% endblock title %}
+{% block title %} Forum | {{ cat_slug|title }} | Discussions {% endblock title %}
 
 {% block head %}
-    <meta name="description" content="">
-    <meta property="og:title" content="">
+    <meta name="description" content="List of active forums">
+    <meta property="og:title" content="Forums">
     <meta property="og:site_name" content="{{ request.get_host }}">
     <meta property="og:url" content="{{ request.build_absolute_uri }}">
     <meta property="og:image" content="{% static 'img/logo.png' %}" type="image/png">
     <meta property="og:description" content="">
 
     <style>
-
-        {#  Hide messages default #}
         #successMsg, #errorMsg, #invalid-msg, #invalid-title, .successMsg, .errorMsg {
             display: none;
         }
@@ -31,13 +29,13 @@
     <section id="body_refresh">
         <div class="container">
             <div class="row">
-                <h2 class="text-center fs-5 font-semibold position-relative">Active discussions:</h2>
+                <h1 class="text-center fs-5 font-semibold position-relative">Active discussions:</h1>
                 <h3 class="fs-6 text-center">{{ cat_slug|title }}</h3>
-                <div class="col-sm-3">
+                <div class="col-sm-3 mt-1">
                     <p class="text-center fw-bold">Other Forums</p>
-                    <ul class="list-group pb-5 pt-2">
+                    <ul class="list-group pb-5 pt-2 text-wrap text-break">
                         {% for forum in all_forums %}
-                            <a href="{{ forum.get_absolute_url }}" class="btn-link text-decoration-none">
+                            <a href="{{ forum.get_absolute_url }}" class="btn-link text-decoration-none text-dark text-start">
                                 <li id="active_{{ forum.pk }}" data-id="{{ forum.pk }}"
                                     class="list-group-item fancy-border-list">{{ forum.topic }}
                                 </li>
@@ -51,11 +49,11 @@
                             {% if cat.forums.all %}
                                 {% for f in cat.forums.all %}
                                     {% if f.forum and f.parent is None %}
-                                        <a href="{{ f.get_absolute_url }}" class="btn-link text-decoration-none">
+                                        <a href="{{ f.get_absolute_url }}" class="btn-link text-decoration-none text-dark text-start">
                                             <li class="list-group-item d-flex justify-content-between align-items-start mb-4 fancy-border-list">
 
                                                 <div class="ms-2 text-start">
-                                                    <p class="fs-4">{{ f.title|capfirst }}</p>
+                                                    <h2 class="fs-6">{{ f.title|capfirst }}</h2>
                                                     {{ f.discuss|striptags|truncatechars_html:50|safe }}
                                                 </div>
                                                 <span title="Replies made" data-bs-toggle="tooltip"
@@ -73,6 +71,7 @@
                         </ul>
                         <div id="forum" data-id="{{ cat.pk }}"></div>
                     {% endfor %}
+
                     {% if request.user.is_authenticated %}
                         <div class="d-grid gap-2 mx-auto col-12 py-5">
                             <p class="text-center fs-5 font-semibold">Create Discussion</p>

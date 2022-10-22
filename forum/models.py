@@ -35,7 +35,7 @@ class Forum(models.Model):
         return reverse('forum:forum_live', args=[self.cat_slug])
 
     def __str__(self):
-        return str(self.id)
+        return str(self.id) + " " + self.topic
 
 
 # child model
@@ -71,7 +71,8 @@ class Discussion(models.Model):
         return reverse('index:discussion', args=[self.slug])
 
     def save(self, *args, **kwargs):
-        self.slug = slugify(self.title)
+        if not self.pk:
+            self.slug = slugify(self.title)
         super(Discussion, self).save(*args, **kwargs)
 
     def __str__(self):

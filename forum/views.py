@@ -1,3 +1,5 @@
+import re
+
 from django.contrib import messages
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -66,31 +68,34 @@ def discussion(request, slug):
     return render(request, 'forum/discussion.html', data)
 
 
-def create_disc(request):
-    if request.POST.get('action') == 'POST':
 
+def create_disc(request):
+
+    if request.POST.get('action') == 'POST':
         Fid = int(request.POST.get('ForumId'))
         disc = request.POST.get('rp')
-        tp = request.POST.get('tp')
+        title = request.POST.get('tp')
         author = request.user.id
-        if disc == "" or tp is "":
-            # messages.error(request, "Field is required")
-            raise disc.ValidationError(request, "Field is required")
-            pass
-
         # Get Instances of Forum and Discussion to use in TRY
         ForumId = get_object_or_404(Forum, pk=Fid)
-
-        response: JsonResponse = JsonResponse({'ForumId': ForumId.pk, 'tp': tp, 'disc': disc})
-
-        if request is None:
-            return HttpResponse(status=400)
-        else:
-            create_insert = Discussion.objects.create(title=tp, discuss=disc, forum=ForumId, author_id=author)
+        # Validate input
+        if disc == "" or title == "":
+            messages.error(request, "Please fill out all fields!")
+            raise disc.ValidationError(request, "Field is required")
+            pass
+        # compiling the pattern
+        pat = re.compile(r"[A-ZØÆÅa-zøæå ]+")
+        # Checks whether the whole string matches the re.pattern or not
+        if re.fullmatch(pat, title):
+            print(f"'{title}' is a valid title!")
+            response: JsonResponse = JsonResponse({'ForumId': ForumId.pk, 'title': title, 'disc': disc})
+            create_insert = Discussion.objects.create(title=title, discuss=disc, forum=ForumId, author_id=author)
             if create_insert:
                 create_insert.save()
-
             return HttpResponse(response)
+        else:
+            print(f"'{title}' is NOT a valid title!")
+            messages.error(request, "Please add valid title")
 
 
 
